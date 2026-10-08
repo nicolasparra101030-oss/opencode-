@@ -1,0 +1,82 @@
+# Configuración del pipeline de cobertura terrestre - San Andrés, Colombia
+
+# Zona de estudio
+zone:
+  name: "San Andrés"
+  # Coordenadas del municipio (centro aproximado)
+  lat: 12.55
+  lon: -81.72
+  # Buffer en grados para definir el área de interés (~5km)
+  buffer_deg: 0.05
+  # Archivo GeoJSON/Shapefile opcional con el límite administrativo
+  boundary_file: null  # "data/san_andres_boundary.geojson"
+
+# Fechas para composición temporal
+dates:
+  start: "2024-01-01"
+  end: "2024-12-31"
+  # Número de fechas a muestrear para la composición temporal
+  n_dates: 5
+  # Meses preferidos (temporada seca en el Caribe)
+  preferred_months: [1, 2, 3, 4, 12]
+
+# Modelo
+model:
+  name: "Prithvi"
+  # Hugging Face model ID
+  hf_model_id: "ibm-nasa-geospatial/Prithvi-100M"
+  # Tamaño de tile para inferencia
+  tile_size: 256
+  # Número de bandas de entrada (6 ópticas + 2 radar)
+  n_channels: 8
+  # Clases de cobertura terrestre
+  classes:
+    0: "No data"
+    1: "Tree cover"
+    2: "Shrubland"
+    3: "Grassland"
+    4: "Cropland"
+    5: "Built-up"
+    6: "Bare / sparse vegetation"
+    7: "Snow and ice"
+    8: "Open water"
+    9: "Herbaceous wetland"
+    10: "Mangroves"
+    11: "Moss and lichen"
+  # Clases relevantes para San Andrés (subconjunto)
+  relevant_classes: [1, 2, 3, 5, 6, 8, 10]
+
+# Sentinel-2
+sentinel2:
+  collection: "sentinel-2-l2a"
+  resolution: 10  # metros
+  bands: ["B02", "B03", "B04", "B08", "B11", "B12"]  # 6 bandas para Prithvi
+  cloud_mask_band: "SCL"
+  max_cloud_cover: 20  # porcentaje
+
+# Sentinel-1 (Radar)
+sentinel1:
+  collection: "sentinel-1-grd"
+  resolution: 10
+  bands: ["VV", "VH"]
+  orbit_direction: "ASCENDING"
+
+# Rutas
+paths:
+  data_dir: "data"
+  output_dir: "outputs"
+  model_cache: "data/model_cache"
+  sentinel_cache: "data/sentinel_cache"
+
+# Procesamiento
+processing:
+  batch_size: 4
+  num_workers: 2
+  device: "auto"  # auto, cpu, cuda
+  use_fp16: true
+
+# Web
+web:
+  host: "127.0.0.1"
+  port: 8000
+  debug: true
